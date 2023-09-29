@@ -97,7 +97,16 @@ require('lazy').setup({
     "christoomey/vim-tmux-navigator",
     lazy = false,
   },
-
+  { 'mfussenegger/nvim-dap',
+    config = function() require("dap.javascript").setup() end
+  },
+  { "rcarriga/nvim-dap-ui", requires = {"mfussenegger/nvim-dap"} },
+  { 'theHamsta/nvim-dap-virtual-text' },
+  { 'mxsdev/nvim-dap-vscode-js'},
+  {
+    "microsoft/vscode-js-debug",
+     opt = true,
+  },
   {
     "windwp/nvim-autopairs",
     config = function() require("nvim-autopairs").setup {} end
@@ -254,6 +263,9 @@ vim.o.completeopt = 'menuone,noselect'
 -- NOTE: You should make sure your terminal supports this
 vim.o.termguicolors = true
 
+-- nvim-dap-virtual-text show virtual text for current frame
+vim.g.dap_virtual_text = true
+
 -- [[ Basic Keymaps ]]
 
 -- Keymaps for better default experience
@@ -266,6 +278,42 @@ vim.keymap.set('n', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = tr
 
 -- Remap of the esc key to something easier
 vim.keymap.set('i', 'jj', '<Esc>', {});
+
+-- Mapping for Debugger
+vim.keymap.set('n', '<F5>', ":lua require'dap'.continue()<CR>");
+vim.keymap.set('n', '<F10>', ":lua require'dap'.step_over()<CR>");
+vim.keymap.set('n', '<F11>', ":lua require'dap'.step_into()<CR>");
+vim.keymap.set('n', '<F12>', ":lua require'dap'.step_out()<CR>");
+vim.keymap.set('n', '<leader>b', ":lua require'dap'.toggle_breakpoint()<CR>");
+vim.keymap.set('n', '<leader>B', ":lua require'dap'.set_breakpoint()<CR>");
+vim.keymap.set('n', '<leader>lp', ":lua require'dap'.set_breakpoint(nil, nil, vim.fn.input('Log point message: '))<CR>");
+vim.keymap.set('n', '<leader>dr', ":lua require'dap'.repl.open()<CR>");
+vim.keymap.set('n', '<leader>do', ":lua require'dapui'.open()<CR>");
+
+require('nvim-dap-virtual-text').setup({
+  enabled = true,
+  display_callback = function(variable, buf, stackframe, node, options)
+    if options.virt_text_pos == 'inline' then
+      return ' = ' .. variable.value
+    else
+      return variable.name .. ' = ' .. variable.value
+    end
+  end,
+  virt_text_pos = vim.fn.has 'nvim-0.10' == 1 and 'inline' or 'eol',
+})
+
+require('dapui').setup()
+
+local dap, dapui = require("dap"), require("dapui")
+dap.listeners.after.event_initialized["dapui_config"] = function()
+  dapui.open()
+end
+dap.listeners.before.event_terminated["dapui_config"] = function()
+  dapui.close()
+end
+dap.listeners.before.event_exited["dapui_config"] = function()
+  dapui.close()
+end
 
 -- [[ Highlight on yank ]]
 -- See `:help vim.highlight.on_yank()`
@@ -428,6 +476,9 @@ local on_attach = function(_, bufnr)
     vim.lsp.buf.format()
   end, { desc = 'Format current buffer with LSP' })
 end
+
+-- Debugger for javascript setup
+require("dap.javascript")
 
 -- Enable the following language servers
 --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
