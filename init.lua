@@ -117,6 +117,9 @@ require('lazy').setup({
      opt = true,
   },
   {
+    'windwp/nvim-ts-autotag'
+  },
+  {
     "windwp/nvim-autopairs",
     config = function() require("nvim-autopairs").setup {} end
   },
@@ -223,8 +226,8 @@ require('lazy').setup({
 -- See `:help vim.o`
 
 -- Set tabstop to 4, overrides the default 8 from vim-sleuth
-vim.o.tabstop = 4
-vim.o.shiftwidth = 4
+vim.o.tabstop = 2
+vim.o.shiftwidth = 2
 -- Set highlight on search
 vim.o.hlsearch = false
 
@@ -290,6 +293,7 @@ vim.keymap.set('n', '<leader>lp', ":lua require'dap'.set_breakpoint(nil, nil, vi
 vim.keymap.set('n', '<leader>dr', ":lua require'dap'.repl.open()<CR>");
 vim.keymap.set('n', '<leader>do', ":lua require'dapui'.open()<CR>");
 
+
 require("nvim-dap-virtual-text").setup({
     enabled = true,                        -- enable this plugin (the default)
     enabled_commands = true,               -- create commands DapVirtualTextEnable, DapVirtualTextDisable, DapVirtualTextToggle, (DapVirtualTextForceRefresh for refreshing when debug adapter did not notify its termination)
@@ -325,6 +329,12 @@ require("nvim-dap-virtual-text").setup({
 })
 
 require('dapui').setup()
+require('nvim-ts-autotag').setup();
+-- Configure indent-blankline.nvim
+require("indent_blankline").setup()
+
+
+
 
 local dap, dapui = require("dap"), require("dapui")
 dap.listeners.after.event_initialized["dapui_config"] = function()
@@ -387,6 +397,9 @@ vim.keymap.set('n', '<leader>sd', require('telescope.builtin').diagnostics, { de
 require('nvim-treesitter.configs').setup {
   -- Add languages to be installed here that you want installed for treesitter
   ensure_installed = { 'c', 'cpp', 'go', 'javascript', 'lua', 'python', 'rust', 'tsx', 'typescript', 'vimdoc', 'vim' },
+  autotag = {
+    enable = true,
+  },
 
   -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
   auto_install = false,
