@@ -68,6 +68,7 @@ require('lazy').setup({
   -- Git related plugins
   'tpope/vim-fugitive',
   'tpope/vim-rhubarb',
+  'andweeb/presence.nvim',
 
   -- Detect tabstop and shiftwidth automatically
   'tpope/vim-sleuth',
