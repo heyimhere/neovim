@@ -99,6 +99,9 @@ require('lazy').setup({
     lazy = false,
   },
   {
+    "catppuccin/nvim", name = "catppuccin", priority = 1000
+  },
+  {
     -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     dependencies = {
@@ -181,10 +184,8 @@ require('lazy').setup({
     'lukas-reineke/indent-blankline.nvim',
     -- Enable `lukas-reineke/indent-blankline.nvim`
     -- See `:help indent_blankline.txt`
-    opts = {
-      char = '┊',
-      show_trailing_blankline_indent = false,
-    },
+    main = "ibl",
+    opts = { },
   },
 
   -- "gc" to comment visual regions/lines
@@ -332,7 +333,12 @@ require("nvim-dap-virtual-text").setup({
 require('dapui').setup()
 require('nvim-ts-autotag').setup();
 -- Configure indent-blankline.nvim
-require("indent_blankline").setup()
+require("ibl").setup()
+require("catppuccin").setup({
+  flavour = "frappe"
+});
+
+vim.cmd.colorscheme "catppuccin"
 
 
 
