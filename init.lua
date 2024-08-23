@@ -106,6 +106,10 @@ require('lazy').setup({
     lazy = false,
   },
   {
+    "kevinhwang91/nvim-ufo",
+    dependencies = "kevinhwang91/promise-async",
+  },
+  {
     "nvim-tree/nvim-tree.lua",
     version = "*",
     lazy = false,
@@ -249,6 +253,7 @@ require('lazy').setup({
 vim.o.tabstop = 2
 vim.o.shiftwidth = 2
 vim.o.softtabstop = 2
+vim.o.expandtab = true
 -- Set highlight on search
 vim.o.hlsearch = false
 
@@ -303,6 +308,29 @@ vim.keymap.set('n', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = tr
 -- Remap of the esc key to something easier
 vim.keymap.set('i', 'jj', '<Esc>', {});
 
+require('dapui').setup();
+
+-- Mapping for ufo
+vim.o.foldcolumn = '1'
+vim.o.foldlevel = 99
+vim.o.foldlevelstart = 99
+vim.o.foldenable = true
+
+vim.keymap.set('n', 'zR', require('ufo').openAllFolds, { desc = "Open all folds" })
+vim.keymap.set('n', 'zM', require('ufo').closeAllFolds, { desc = "Close all folds" })
+vim.keymap.set('n', 'zK', function()
+  local winid = require('ufo').peekFoldedLinesUnderCursor()
+  if not winid then
+    vim.lsp.buf.hover()
+  end
+end, { desc = "Peek Fold" })
+
+require('ufo').setup({
+  provider_selector = function(bufnr, filetype, buftype)
+    return { 'lsp', 'indent' }
+  end
+})
+
 -- Mapping for Debugger
 vim.keymap.set('n', '<F5>', ":lua require'dap'.continue()<CR>");
 vim.keymap.set('n', '<F3>', ":lua require'dap'.step_over()<CR>");
@@ -312,8 +340,20 @@ vim.keymap.set('n', '<leader>b', ":lua require'dap'.toggle_breakpoint()<CR>");
 vim.keymap.set('n', '<leader>B', ":lua require'dap'.set_breakpoint()<CR>");
 vim.keymap.set('n', '<leader>lp', ":lua require'dap'.set_breakpoint(nil, nil, vim.fn.input('Log point message: '))<CR>");
 vim.keymap.set('n', '<leader>dr', ":lua require'dap'.repl.open()<CR>");
-vim.keymap.set('n', '<leader>do', ":lua require'dapui'.open()<CR>");
+vim.keymap.set('n', '<leader>do', ":lua require'dapui'.open({reset = true})<CR>");
+vim.keymap.set('n', '<leader>dc', ":lua require'dapui'.close()<CR>");
 
+
+local dap, dapui = require("dap"), require("dapui")
+dap.listeners.after.event_initialized["dapui_config"] = function()
+  dapui.open()
+end
+dap.listeners.before.event_terminated["dapui_config"] = function()
+  dapui.close()
+end
+dap.listeners.before.event_exited["dapui_config"] = function()
+  dapui.close()
+end
 
 require("nvim-dap-virtual-text").setup({
     enabled = true,                        -- enable this plugin (the default)
@@ -349,7 +389,6 @@ require("nvim-dap-virtual-text").setup({
                                            -- e.g. 80 to position at column 80, see `:h nvim_buf_set_extmark()`
 })
 
-require('dapui').setup()
 require('nvim-ts-autotag').setup();
 -- Configure indent-blankline.nvim
 require("ibl").setup()
@@ -382,20 +421,6 @@ require("presence").setup({
 });
 
 vim.cmd.colorscheme "catppuccin"
-
-
-
-
-local dap, dapui = require("dap"), require("dapui")
-dap.listeners.after.event_initialized["dapui_config"] = function()
-  dapui.open()
-end
-dap.listeners.before.event_terminated["dapui_config"] = function()
-  dapui.close()
-end
-dap.listeners.before.event_exited["dapui_config"] = function()
-  dapui.close()
-end
 
 -- [[ Highlight on yank ]]
 -- See `:help vim.highlight.on_yank()`

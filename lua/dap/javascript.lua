@@ -1,4 +1,4 @@
-local DEBUGGER_PATH = vim.fn.stdpath "data" .. "/lazy/vscode-js-debug"
+local DEBUGGER_PATH = vim.fn.stdpath("data") .. "/lazy/vscode-js-debug"
 
 local M = {}
 
