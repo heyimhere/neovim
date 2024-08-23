@@ -41,6 +41,13 @@ P.S. You can delete this when you're done too. It's your config now :)
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
+-- disable netrw at the very start of your init.lua
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
+
+-- set termguicolors to enable highlight groups
+vim.opt.termguicolors = true
+
 -- Install package manager
 --    https://github.com/folke/lazy.nvim
 --    `:help lazy.nvim.txt` for more info
@@ -68,6 +75,7 @@ require('lazy').setup({
   -- Git related plugins
   'tpope/vim-fugitive',
   'tpope/vim-rhubarb',
+  'nvim-neotest/nvim-nio',
   'andweeb/presence.nvim',
 
   -- Detect tabstop and shiftwidth automatically
@@ -93,10 +101,24 @@ require('lazy').setup({
       'folke/neodev.nvim',
     },
   },
-
   {
     "christoomey/vim-tmux-navigator",
     lazy = false,
+  },
+  {
+    "kevinhwang91/nvim-ufo",
+    dependencies = "kevinhwang91/promise-async",
+  },
+  {
+    "nvim-tree/nvim-tree.lua",
+    version = "*",
+    lazy = false,
+    dependencies = {
+      "nvim-tree/nvim-web-devicons",
+    },
+    config = function()
+    require("nvim-tree").setup {}
+    end,
   },
   {
     "catppuccin/nvim", name = "catppuccin", priority = 1000
@@ -230,6 +252,8 @@ require('lazy').setup({
 -- Set tabstop to 4, overrides the default 8 from vim-sleuth
 vim.o.tabstop = 2
 vim.o.shiftwidth = 2
+vim.o.softtabstop = 2
+vim.o.expandtab = true
 -- Set highlight on search
 vim.o.hlsearch = false
 
@@ -284,6 +308,29 @@ vim.keymap.set('n', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = tr
 -- Remap of the esc key to something easier
 vim.keymap.set('i', 'jj', '<Esc>', {});
 
+require('dapui').setup();
+
+-- Mapping for ufo
+vim.o.foldcolumn = '1'
+vim.o.foldlevel = 99
+vim.o.foldlevelstart = 99
+vim.o.foldenable = true
+
+vim.keymap.set('n', 'zR', require('ufo').openAllFolds, { desc = "Open all folds" })
+vim.keymap.set('n', 'zM', require('ufo').closeAllFolds, { desc = "Close all folds" })
+vim.keymap.set('n', 'zK', function()
+  local winid = require('ufo').peekFoldedLinesUnderCursor()
+  if not winid then
+    vim.lsp.buf.hover()
+  end
+end, { desc = "Peek Fold" })
+
+require('ufo').setup({
+  provider_selector = function(bufnr, filetype, buftype)
+    return { 'lsp', 'indent' }
+  end
+})
+
 -- Mapping for Debugger
 vim.keymap.set('n', '<F5>', ":lua require'dap'.continue()<CR>");
 vim.keymap.set('n', '<F3>', ":lua require'dap'.step_over()<CR>");
@@ -293,8 +340,20 @@ vim.keymap.set('n', '<leader>b', ":lua require'dap'.toggle_breakpoint()<CR>");
 vim.keymap.set('n', '<leader>B', ":lua require'dap'.set_breakpoint()<CR>");
 vim.keymap.set('n', '<leader>lp', ":lua require'dap'.set_breakpoint(nil, nil, vim.fn.input('Log point message: '))<CR>");
 vim.keymap.set('n', '<leader>dr', ":lua require'dap'.repl.open()<CR>");
-vim.keymap.set('n', '<leader>do', ":lua require'dapui'.open()<CR>");
+vim.keymap.set('n', '<leader>do', ":lua require'dapui'.open({reset = true})<CR>");
+vim.keymap.set('n', '<leader>dc', ":lua require'dapui'.close()<CR>");
 
+
+local dap, dapui = require("dap"), require("dapui")
+dap.listeners.after.event_initialized["dapui_config"] = function()
+  dapui.open()
+end
+dap.listeners.before.event_terminated["dapui_config"] = function()
+  dapui.close()
+end
+dap.listeners.before.event_exited["dapui_config"] = function()
+  dapui.close()
+end
 
 require("nvim-dap-virtual-text").setup({
     enabled = true,                        -- enable this plugin (the default)
@@ -330,7 +389,6 @@ require("nvim-dap-virtual-text").setup({
                                            -- e.g. 80 to position at column 80, see `:h nvim_buf_set_extmark()`
 })
 
-require('dapui').setup()
 require('nvim-ts-autotag').setup();
 -- Configure indent-blankline.nvim
 require("ibl").setup()
@@ -338,21 +396,31 @@ require("catppuccin").setup({
   flavour = "frappe"
 });
 
+require("presence").setup({
+  -- General options
+  auto_update         = true,                       -- Update activity based on autocmd events (if `false`, map or manually execute `:lua package.loaded.presence:update()`)
+  neovim_image_text   = "The One True Text Editor", -- Text displayed when hovered over the Neovim image
+  main_image          = "neovim",                   -- Main image display (either "neovim" or "file")
+  client_id           = "793271441293967371",       -- Use your own Discord application client id (not recommended)
+  log_level           = nil,                        -- Log messages at or above this level (one of the following: "debug", "info", "warn", "error")
+  debounce_timeout    = 10,                         -- Number of seconds to debounce events (or calls to `:lua package.loaded.presence:update(<filename>, true)`)
+  enable_line_number  = false,                      -- Displays the current line number instead of the current project
+  blacklist           = {},                         -- A list of strings or Lua patterns that disable Rich Presence if the current file name, path, or workspace matches
+  buttons             = true,                       -- Configure Rich Presence button(s), either a boolean to enable/disable, a static table (`{{ label = "<label>", url = "<url>" }, ...}`, or a function(buffer: string, repo_url: string|nil): table)
+  file_assets         = {},                         -- Custom file asset definitions keyed by file names and extensions (see default config at `lua/presence/file_assets.lua` for reference)
+  show_time           = true,                       -- Show the timer
+
+  -- Rich Presence text options
+  editing_text        = "Editing %s",               -- Format string rendered when an editable file is loaded in the buffer (either string or function(filename: string): string)
+  file_explorer_text  = "Browsing %s",              -- Format string rendered when browsing a file explorer (either string or function(file_explorer_name: string): string)
+  git_commit_text     = "Committing changes",       -- Format string rendered when committing changes in git (either string or function(filename: string): string)
+  plugin_manager_text = "Managing plugins",         -- Format string rendered when managing plugins (either string or function(plugin_manager_name: string): string)
+  reading_text        = "Reading %s",               -- Format string rendered when a read-only or unmodifiable file is loaded in the buffer (either string or function(filename: string): string)
+  workspace_text      = "Working on %s",            -- Format string rendered when in a git repository (either string or function(project_name: string|nil, filename: string): string)
+  line_number_text    = "Line %s out of %s",        -- Format string rendered when `enable_line_number` is set to true (either string or function(line_number: number, line_count: number): string)
+});
+
 vim.cmd.colorscheme "catppuccin"
-
-
-
-
-local dap, dapui = require("dap"), require("dapui")
-dap.listeners.after.event_initialized["dapui_config"] = function()
-  dapui.open()
-end
-dap.listeners.before.event_terminated["dapui_config"] = function()
-  dapui.close()
-end
-dap.listeners.before.event_exited["dapui_config"] = function()
-  dapui.close()
-end
 
 -- [[ Highlight on yank ]]
 -- See `:help vim.highlight.on_yank()`
