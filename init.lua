@@ -311,6 +311,7 @@ vim.keymap.set('i', 'jj', '<Esc>', {});
 require('dapui').setup();
 
 -- Mapping for ufo
+-- za to fold and unfold
 vim.o.foldcolumn = '1'
 vim.o.foldlevel = 99
 vim.o.foldlevelstart = 99
@@ -684,3 +685,5 @@ cmp.setup {
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=4 sts=4 sw=4 et
+-- NvimTreeToggle moving marked files is done by marking them with "m" and then going to the folder or place to move them to and typing "bmv"
+-- Moving panes in tmux is done with prefix + :swap-pane [-v] [-h] -t [1] or replace swap-pane to join-pane to join a pane.
