@@ -143,7 +143,13 @@ require('lazy').setup({
      opt = true,
   },
   {
-    'windwp/nvim-ts-autotag'
+    'windwp/nvim-ts-autotag',
+    ft = {
+      "javascript",
+      "javascriptreact",
+      "typescript",
+      "typescriptreact",
+    }
   },
   {
     "windwp/nvim-autopairs",
@@ -446,6 +452,47 @@ require('telescope').setup {
     },
   },
 }
+
+-- Make sure Conform is installed (Kickstart usually includes it)
+-- If not, install 'stevearc/conform.nvim' with your plugin manager first.
+
+-- PRETTIERD + CONFORM SETUP
+local ok, conform = pcall(require, "conform")
+if ok then
+  conform.setup({
+    -- Map filetypes to formatters (prettierd for web stack)
+    formatters_by_ft = {
+      javascript        = { "prettierd" },
+      typescript        = { "prettierd" },
+      javascriptreact   = { "prettierd" },
+      typescriptreact   = { "prettierd" },
+      json              = { "prettierd" },
+      jsonc             = { "prettierd" },
+      html              = { "prettierd" },
+      css               = { "prettierd" },
+      scss              = { "prettierd" },
+      less              = { "prettierd" },
+      markdown          = { "prettierd" },
+      ["markdown.mdx"]  = { "prettierd" },
+      yaml              = { "prettierd" },
+      graphql           = { "prettierd" },
+      vue               = { "prettierd" },
+      svelte            = { "prettierd" },
+    },
+
+    -- Built-in format-on-save (simplest)
+    format_on_save = {
+      lsp_fallback = true, -- use LSP if no formatter for the buffer
+      timeout_ms = 500,
+    },
+  })
+
+  -- Optional: manual keymap to format current buffer
+  vim.keymap.set({ "n", "v" }, "<leader>f", function()
+    require("conform").format({ lsp_fallback = true, timeout_ms = 500 })
+  end, { desc = "Format buffer with Conform" })
+end
+
 
 -- Enable telescope fzf native, if installed
 pcall(require('telescope').load_extension, 'fzf')
