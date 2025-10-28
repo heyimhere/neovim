@@ -82,6 +82,7 @@ require('lazy').setup({
   'tpope/vim-sleuth',
 
   'tpope/vim-commentary',
+  'maxmellon/vim-jsx-pretty',
 
   -- NOTE: This is where your plugins related to LSP can be installed.
   --  The configuration is done below. Search for lspconfig to find it below.
@@ -192,7 +193,16 @@ require('lazy').setup({
       vim.cmd.colorscheme 'onedark'
     end,
   },
-
+  {
+    "kylechui/nvim-surround",
+    version = "^3.0.0", -- Use for stability; omit to use `main` branch for the latest features
+    event = "VeryLazy",
+    config = function()
+        require("nvim-surround").setup({
+            -- Configuration here, or leave empty to use defaults
+        })
+    end
+  },
   {
     -- Set lualine as statusline
     'nvim-lualine/lualine.nvim',
